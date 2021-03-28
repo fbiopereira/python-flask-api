@@ -3,7 +3,7 @@ from flask import Response
 from src.rest_api.api import api
 from src.rest_api.observability.namespace import ns_observability
 from prometheus_client import generate_latest
-from src.app import flask_app
+from src.app import flask_app, log
 
 
 @ns_observability.route('/metrics')
