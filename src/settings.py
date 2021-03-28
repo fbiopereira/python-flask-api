@@ -1,15 +1,18 @@
 import os
-from git import Repo, TagReference
-from datetime import datetime
+from src.helpers.git_helpers import GitHelpers
+from src.custom_log.custom_log import CustomLog
 
 
 class Settings:
 
     def __init__(self, flask_app):
         self.flask_app = flask_app
+        self.git_helpers = GitHelpers(os.environ.get('ENVIRONMENT'))
+        self.service_version = self.git_helpers.get_service_version()
         self.configure_app()
-        self.service_version = self.get_service_version()
-
+        self.log = CustomLog(service_name=flask_app.config['SERVICE_NAME'],
+                        service_version=flask_app.config['SERVICE_VERSION'],
+                        environment=flask_app.config['ENVIRONMENT'])
 
     if os.environ.get('FLASK_DEBUG') is not None:
         FLASK_DEBUG = os.environ.get('FLASK_DEBUG')
@@ -47,37 +50,9 @@ class Settings:
 
 
 
-    def get_git_repo(self):
-        git_path = os.path.dirname(os.path.abspath(__file__))
-        if os.name != 'nt':
-            git_path = git_path.replace("/src", "")
-        else:
-            git_path = git_path.replace("\\src", "")
-        repo = Repo(git_path)
-        return repo
 
-    def get_git_last_commit(self):
-        return str(self.get_git_repo().head.commit)
 
-    def get_git_last_tag(self):
-        try:
-            tag_ref = TagReference.list_items(self.get_git_repo())[0]
-            if tag_ref.tag is not None:
-                return str(tag_ref.tag)
-            else:
-                return 'n0.0.0'
-        except Exception:
-            return 'e0.0.0'
 
-    def get_service_version(self):
-        if self.flask_app.config["ENVIRONMENT"] != 'production':
-            return self.get_git_last_commit()
-        else:
-            return self.get_git_last_tag()
-
-    def get_server_datetime(self):
-        dt = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        return dt
 
 
 
