@@ -13,7 +13,7 @@ import socket
 
 class CustomLog(object):
 
-    def __init__(self, service_name, service_version, environment, scope_name=__name__):
+    def __init__(self, service_name, service_version, environment, log_path=None, scope_name=__name__):
 
         self._max_file_size = 500000
         self._log_folder = None
@@ -24,8 +24,8 @@ class CustomLog(object):
         self.formatter = JSONFormatter()
         self._logger = logging.getLogger(scope_name)
 
-        if os.environ.get('LOG_PATH') is not None:
-            self._log_folder = os.environ.get('LOG_PATH')
+        if log_path is not None:
+            self._log_folder = log_path
             self.create_log_file()
 
         self.create_stdout_handler()
