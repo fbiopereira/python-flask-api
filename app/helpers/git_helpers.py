@@ -10,9 +10,9 @@ class GitHelpers:
     def get_git_repo(self):
         git_path = os.path.dirname(os.path.abspath(__file__))
         if os.name != 'nt':
-            git_path = git_path.replace("/src/helpers", "")
+            git_path = git_path.replace("/app/helpers", "")
         else:
-            git_path = git_path.replace("\\src\\helpers", "")
+            git_path = git_path.replace("\\app\\helpers", "")
         repo = Repo(git_path)
         return repo
 

@@ -1,29 +1,8 @@
 from flask_restplus import Resource, fields
-from flask import Response
-from src.rest_api.api import api
-from src.rest_api.observability.namespace import ns_observability
-from prometheus_client import generate_latest
-from src.custom_log.log_request import log_request
-from src.app import flask_app
-from src.helpers.datetime_helpers import DateTimeHelpers
-
-
-@ns_observability.route('/metrics')
-@api.response(200, 'Prometheus Metrics')
-class Metrics(Resource):
-
-     def get(self):
-         return Response(generate_latest())
-
-
-@log_request
-@ns_observability.route('/healthcheck')
-@api.response(200, 'Liveness status')
-class Liveness(Resource):
-
-    def get(self):
-        return Response("I'm alive"), 200
-
+from .namespace import ns_observability
+from app.custom_log.log_request import log_request
+from app.helpers.datetime_helpers import DateTimeHelpers
+from app.settings import flask_app
 
 info_model = ns_observability.model('InfoReturnModel', {
                     'ENVIRONMENT': fields.String(),
@@ -34,11 +13,11 @@ info_model = ns_observability.model('InfoReturnModel', {
                  })
 
 
-@log_request
 @ns_observability.route('/info')
-@api.response(200, 'Environment info')
 class Info(Resource):
 
+    @log_request
+    @ns_observability.response(200, 'Environment info')
     def get(self):
         info_return = {
             "version": flask_app.config['SERVICE_VERSION'],

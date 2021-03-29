@@ -7,7 +7,7 @@ import logging.handlers
 import logging.config
 from logging.handlers import RotatingFileHandler
 from logging import StreamHandler
-from src.custom_log.json_log_formatter import JSONFormatter
+from .json_log_formatter import JSONFormatter
 import socket
 
 

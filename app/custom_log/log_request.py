@@ -1,5 +1,5 @@
 from flask import request
-from src.app import log
+import app
 
 
 def log_request(f):
@@ -8,7 +8,7 @@ def log_request(f):
         if request.data:
             message += str(request.data)
 
-        log.info(message='Request recebido: ' + message)
+        app.log.info(message='Request recebido: ' + message)
         response = f(*args, **kwargs)
         return response
     return wrapper
