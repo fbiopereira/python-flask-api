@@ -50,10 +50,13 @@ flask_app.config['SERVICE_VERSION'] = service_version
 flask_app.config['LOG_PATH'] = log_path
 flask_app.config['MONGO_URI'] = "mongodb://localhost:27017/movies"
 
+if os.environ.get('MONGO_URI') is not None:
+    flask_app.config['MONGO_URI'] = os.environ.get('MONGO_URI')
+
 metrics = PrometheusMetrics(flask_app)
 
 api = Api(title='Flask Restplus API', version=service_version,
-          description='A Flask RestPlus boilerplate to be used in my demos', doc="/docs", validate=True)
+          description='A Flask RestPlus boilerplate to be used in my demos', doc="/", prefix="/api", validate=True)
 
 mongodb = PyMongo(flask_app)
 

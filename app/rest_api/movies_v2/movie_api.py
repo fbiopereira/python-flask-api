@@ -3,13 +3,13 @@ from app.helpers.error_helpers import ErrorHelpers
 from app.helpers.json_encoder import JSONEncoder
 from app.custom_log import log_request
 from app.custom_errors.general_unexpected_error import GeneralUnexpectedError
-from .namespace import ns_movies_v1
+from .namespace import ns_movies_v2
 from flask import request
 import json
 from app.settings import log, mongodb, service_name
 
 
-movie_model = ns_movies_v1.model('Movie Model', {
+movie_model = ns_movies_v2.model('Movie Model', {
                     'title': fields.String(required=True, description="Movie Title"),
                     'genre': fields.String(required=True, description="Movie Main Genre"),
                     'director': fields.String(required=True, description="Movie Director Name"),
@@ -18,7 +18,7 @@ movie_model = ns_movies_v1.model('Movie Model', {
                 })
 
 
-@ns_movies_v1.route("/movie")
+@ns_movies_v2.route("/movie")
 class MovieApi(Resource):
     @log_request
     @ErrorHelpers.check_exceptions
@@ -33,7 +33,8 @@ class MovieApi(Resource):
 
     def save_new_movie(self, movie_json):
         try:
-            log.info(200, message="Starting saving new movie in database with json {}".format(str(movie_json)))
+            log.info(200, message="Starting saving new movie v2 in database with json {}".format(str(movie_json)))
+
 
             movies_db = mongodb.db.movies
             movies_db.insert_one(movie_json)
