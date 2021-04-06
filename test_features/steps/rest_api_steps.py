@@ -6,6 +6,21 @@ import httpretty
 import app
 
 
+@Given('I mock a {method} method sent to {service_environment_variable} to endpoint {endpoint} will return status code {status_code} and the following json')
+def mock_configuration(context, method, service_environment_variable, endpoint, status_code):
+    mock_configuration = {
+        'status': int(status_code),
+        'url': (app.flask_app.config[service_environment_variable] + endpoint),
+        'body': context.text,
+        'method': method
+    }
+
+    if hasattr(context, 'mock_configurations'):
+        context.mock_configurations.append(mock_configuration)
+    else:
+        context.mock_configurations = [mock_configuration]
+
+
 @Given('the request will receive the following json body')
 def json_body(context):
     body = context.text
@@ -46,3 +61,24 @@ def return_json(context):
 @Then('should return status code {status_code} {status_name}')
 def response_status_code(context, status_code, status_name):
     assert_that(context.response.status_code, equal_to(int(status_code)))
+
+
+@Then('the last request received by the mock in the endpoint {endpoint} has body')
+def last_request(context, endpoint):
+    request_list = httpretty.HTTPretty.latest_requests
+    expected_json = json.loads(context.text)
+
+    found = False
+    passed = False
+    for received_request in request_list:
+        if received_request.path.find(endpoint) != -1:
+            found = True
+            received_json = json.loads(received_request.body.decode('utf-8'))
+            try:
+                check_json(expected_json, received_json)
+                check_json(received_json, expected_json)
+                passed = True
+            except Exception as ex:
+                print(str(ex))
+
+    assert found and passed

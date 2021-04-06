@@ -6,16 +6,7 @@ from app.custom_errors.general_unexpected_error import GeneralUnexpectedError
 from .namespace import ns_movies_v1
 from flask import request
 import json
-from app.settings import log, mongodb, service_name
-
-
-movie_model = ns_movies_v1.model('Movie Model', {
-                    'title': fields.String(required=True, description="Movie Title"),
-                    'genre': fields.String(required=True, description="Movie Main Genre"),
-                    'director': fields.String(required=True, description="Movie Director Name"),
-                    'story': fields.String(required=True, description="Movie Story Writer"),
-                    'release_year': fields.Integer(required=True, description="Movie First Release Year")
-                })
+from app.settings import log, service_name, mongodb
 
 
 @ns_movies_v1.route("/movie")
@@ -54,6 +45,7 @@ class MovieApi(Resource):
             movie_list = []
             total_movies = 0
             for movie in movies_cursor:
+                del movie['_id']
                 movie_list.append(movie)
                 total_movies += 1
 
@@ -62,6 +54,9 @@ class MovieApi(Resource):
                 "movies": movie_list
 
             }
+
+            log.info(200, message="Found {0} movie(s) in database". format(total_movies))
+
             return api_return, 200
 
         except Exception as ex:

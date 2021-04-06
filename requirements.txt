@@ -28,5 +28,5 @@ uWSGI==2.0.19.1
 httpretty==1.0.5
 behave==1.2.6
 mock==4.0.3
-mongomock==3.22.1
+mongomock==3.14.0
 requests==2.25.1

@@ -6,20 +6,12 @@ from app.custom_errors.general_unexpected_error import GeneralUnexpectedError
 from .namespace import ns_movies_v2
 from flask import request
 import json
-from app.settings import log, mongodb, service_name
-
-
-movie_model = ns_movies_v2.model('Movie Model', {
-                    'title': fields.String(required=True, description="Movie Title"),
-                    'genre': fields.String(required=True, description="Movie Main Genre"),
-                    'director': fields.String(required=True, description="Movie Director Name"),
-                    'story': fields.String(required=True, description="Movie Story Writer"),
-                    'release_year': fields.Integer(required=True, description="Movie First Release Year")
-                })
+import requests
+from app.settings import log, service_name, flask_app, mongodb
 
 
 @ns_movies_v2.route("/movie")
-class MovieApi(Resource):
+class MovieApiV2(Resource):
     @log_request
     @ErrorHelpers.check_exceptions
     def get(self):
@@ -31,10 +23,12 @@ class MovieApi(Resource):
         json_body = request.json
         return self.save_new_movie(json_body)
 
-    def save_new_movie(self, movie_json):
+    def save_new_movie(self, json_body):
         try:
-            log.info(200, message="Starting saving new movie v2 in database with json {}".format(str(movie_json)))
-
+            log.info(200, message="Starting saving new movie v2 in database with json {}".format(str(json_body)))
+            genre = self.get_genre(json_body["genre"])
+            movie_json = json_body
+            movie_json['genre'] = genre
 
             movies_db = mongodb.db.movies
             movies_db.insert_one(movie_json)
@@ -42,7 +36,11 @@ class MovieApi(Resource):
             log.info(
                 201,
                 message="Saved new movie in database with document {}".format(JSONEncoder().encode(movie_json)))
-            return json.loads(str(JSONEncoder().encode(movie_json))), 201
+
+            api_return = json.loads(str(JSONEncoder().encode(movie_json)))
+            del api_return['_id']
+            self.movie_notify(api_return)
+            return api_return, 201
         except Exception as ex:
             raise GeneralUnexpectedError(service_name=service_name, message="Error saving Movie. EX: {}".format(str(ex)))
 
@@ -63,8 +61,27 @@ class MovieApi(Resource):
                 "movies": movie_list
 
             }
+
             return api_return, 200
 
         except Exception as ex:
             raise GeneralUnexpectedError(service_name=service_name,
                                          message="Error retrieving movies. EX: {}".format(str(ex)))
+
+    def get_genre(self, genre_id):
+        service_url = flask_app.config['GENRE_SERVICE_URL'] + "/api/genre/" + str(genre_id)
+        log.info(200, message="Starting to request genre at {0}".format(service_url))
+        genre_response = requests.get(service_url)
+        if genre_response.status_code == 200:
+            return genre_response.json()["genre"]
+        else:
+            return "genre not found"
+
+    def movie_notify(self, movie):
+        service_url = flask_app.config['MOVIE_NOTIFY_SERVICE_URL'] + "/api/movie-notify"
+        log.info(200, message="Starting to request genre at {0}".format(service_url))
+        response = requests.post(service_url, json=movie)
+        if response.status_code == 200:
+            return True
+        else:
+            return False
