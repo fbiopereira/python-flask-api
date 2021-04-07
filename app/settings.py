@@ -76,7 +76,7 @@ log = CustomLog(service_name=service_name,
 metrics = PrometheusMetrics(flask_app)
 
 api = Api(title='Flask Restplus API', version=service_version,
-          description='A Flask RestPlus boilerplate to be used in my demos', doc="/", prefix="/api", validate=True)
+          description='A Flask RestPlus boilerplate to be used in my demos', doc="/docs", prefix="/api", validate=True)
 
 mongodb = PyMongo(flask_app)
 

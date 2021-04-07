@@ -1,7 +1,8 @@
 Feature: Save movies v2
 
 
-  Scenario: I will save a movie in a mocked Mongodb
+  Scenario: I will save a movie in a real Mongodb
+    Given I clear mongodb
     Given I set the environment variable GENRE_SERVICE_URL to http://localhost:1432
     Given I set the environment variable MOVIE_NOTIFY_SERVICE_URL to http://localhost:1433
     Given the request will receive the following json body
